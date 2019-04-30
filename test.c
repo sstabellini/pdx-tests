@@ -266,8 +266,8 @@ static void init_pdx(void)
      * is lower than that.
      */
     bank_start = bootinfo.mem.bank[0].start;
-    if ( bank_start < 1 << (MAX_ORDER + PAGE_SHIFT) )
-        bank_start = 1 << (MAX_ORDER + PAGE_SHIFT);
+    if ( bank_start < 1UL << (MAX_ORDER + PAGE_SHIFT) )
+        bank_start = 1UL << (MAX_ORDER + PAGE_SHIFT);
     mask = pdx_init_mask(bank_start);
 
     printf("DEBUG %s %d mask=%lx\n",__func__,__LINE__,mask);
