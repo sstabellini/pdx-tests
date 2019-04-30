@@ -328,6 +328,7 @@ void setup_frametable_mappings(paddr_t ps, paddr_t pe)
 
 int main()
 {
+    printf("DEBUG TEST ZYNQMP\n");
     bootinfo.mem.bank[0].start = 0x0;
     bootinfo.mem.bank[0].size = 0x7ff00000;
     bootinfo.mem.bank[1].start = (unsigned long long)0x800000000;
@@ -337,4 +338,16 @@ int main()
 
     init_pdx();
     setup_frametable_mappings(0x0, 0x880000000);
+    printf("=====\n");
+
+
+    printf("DEBUG TEST 512MB@2G\n");
+    bootinfo.mem.bank[0].start = 0x80000000;
+    bootinfo.mem.bank[0].size = 0x2000000;
+    bootinfo.mem.nr_banks = 1;
+    tot_size = bootinfo.mem.bank[0].size;
+
+    init_pdx();
+    setup_frametable_mappings(0x80000000, 0x82000000);
+    printf("=====\n");
 }
