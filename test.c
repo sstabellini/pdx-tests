@@ -152,7 +152,7 @@ found_first:
 	if (tmp == ~0UL)	/* Are any bits zero? */
 		return result + size;	/* Nope. */
 found_middle:
-	return result + ffz(tmp);
+	return result + ffz(tmp) - 1;
 }
 
 unsigned long find_next_bit(const unsigned long *addr, unsigned long size,
@@ -191,7 +191,7 @@ found_first:
 	if (tmp == 0UL)		/* Are any bits set? */
 		return result + size;	/* Nope. */
 found_middle:
-	return result + __ffs(tmp);
+	return result + __ffs(tmp) - 1;
 }
 
 static u64 fill_mask(u64 mask)
