@@ -266,8 +266,8 @@ static void init_pdx(void)
      * is lower than that.
      */
     bank_start = bootinfo.mem.bank[0].start;
-    if ( bank_start < (((unsigned long long)1) << (MAX_ORDER + PAGE_SHIFT)) )
-        bank_start = ((unsigned long long)1) << (MAX_ORDER + PAGE_SHIFT);
+    if ( bank_start < 1 << (MAX_ORDER + PAGE_SHIFT) )
+        bank_start = 1 << (MAX_ORDER + PAGE_SHIFT);
     mask = pdx_init_mask(bank_start);
 
     printf("DEBUG %s %d mask=%lx\n",__func__,__LINE__,mask);
@@ -326,7 +326,7 @@ void setup_frametable_mappings(paddr_t ps, paddr_t pe)
 int main()
 {
     bootinfo.mem.bank[0].start = 0x0;
-    bootinfo.mem.bank[0].size = 0x80000000;
+    bootinfo.mem.bank[0].size = 0x7ff00000;
     bootinfo.mem.bank[1].start = (unsigned long long)0x800000000;
     bootinfo.mem.bank[1].size = 0x80000000;
     bootinfo.mem.nr_banks = 2;
