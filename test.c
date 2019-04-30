@@ -21,7 +21,7 @@ typedef u64 register_t;
 #define BITOP_WORD(nr)		((nr) / BITS_PER_LONG)
 #define ffz(x)  __ffs(~(x))
 
-#define MAX_ORDER 20 /* 2^20 contiguous pages */
+#define MAX_ORDER 18 /* 2^20 contiguous pages */
 unsigned long max_pdx;
 unsigned long pfn_pdx_bottom_mask = ~0UL;
 unsigned long ma_va_bottom_mask = ~0UL;
@@ -29,6 +29,7 @@ unsigned long pfn_top_mask = 0;
 unsigned long ma_top_mask = 0;
 unsigned long pfn_hole_mask = 0;
 unsigned int pfn_pdx_hole_shift = 0;
+unsigned long tot_size = 0;
 
 struct page_list_entry
 {
@@ -268,6 +269,7 @@ static void init_pdx(void)
     bank_start = bootinfo.mem.bank[0].start;
     if ( bank_start < 1UL << (MAX_ORDER + PAGE_SHIFT) )
         bank_start = 1UL << (MAX_ORDER + PAGE_SHIFT);
+    printf("DEBUG %s %d bank_start=%lx\n",__func__,__LINE__,bank_start);
     mask = pdx_init_mask(bank_start);
 
     printf("DEBUG %s %d mask=%lx\n",__func__,__LINE__,mask);
@@ -321,6 +323,7 @@ void setup_frametable_mappings(paddr_t ps, paddr_t pe)
 
     printf("DEBUG %s %d start=%lx end=%lx nr_ldxs=%lu\n",__func__,__LINE__,ps,pe,nr_pdxs);
     printf("DEBUG pfn_pdx_bottom_mask=%lx pfn_top_mask=%lx pfn_pdx_hole_shift=%x\n",pfn_pdx_bottom_mask,pfn_top_mask,pfn_pdx_hole_shift);
+    printf("DEBUG size_pdx_memory=%lu tot_size=%lu diff(MB)=%lu\n",nr_pdxs*PAGE_SIZE,tot_size,((nr_pdxs*PAGE_SIZE)-tot_size)/(1024*1024));
 }
 
 int main()
@@ -330,6 +333,7 @@ int main()
     bootinfo.mem.bank[1].start = (unsigned long long)0x800000000;
     bootinfo.mem.bank[1].size = 0x80000000;
     bootinfo.mem.nr_banks = 2;
+    tot_size = bootinfo.mem.bank[0].size + bootinfo.mem.bank[1].size;
 
     init_pdx();
     setup_frametable_mappings(0x0, 0x880000000);
