@@ -1,5 +1,6 @@
 #include <stdint.h>
 #include <stdio.h>
+#include <stdarg.h>
 
 typedef signed int s32;
 typedef unsigned int u32;
@@ -338,42 +339,60 @@ void setup_frametable_mappings(paddr_t ps, paddr_t pe)
     printf("DEBUG size_pdx_memory=%lu tot_size=%lu diff(MB)=%lu\n",nr_pdxs*PAGE_SIZE,tot_size,((nr_pdxs*PAGE_SIZE)-tot_size)/(1024*1024));
 }
 
+static void test(unsigned int nr_banks, ...)
+{
+    va_list args;
+    unsigned int i;
+    unsigned long ram_start, ram_end;
+
+    ram_start = ~0UL;
+    ram_end = 0;
+
+    tot_size = 0;
+
+    va_start(args, nr_banks);
+
+    for ( i = 0; i < nr_banks; i++ )
+    {
+        unsigned long start, size;
+
+        start = va_arg(args, unsigned long);
+        size = va_arg(args, unsigned long);
+
+        printf("bank %u 0x%lx - 0x%lx\n", i, start, start + size - 1);
+
+        bootinfo.mem.bank[i].start = start;
+        bootinfo.mem.bank[i].size = size;
+
+        if ( ram_start > start )
+            ram_start = start;
+
+        if ( ram_end < (start + size) )
+            ram_end = start + size;
+
+        tot_size += size;
+    }
+
+    va_end(args);
+
+    bootinfo.mem.nr_banks = i;
+
+    init_pdx();
+    setup_frametable_mappings(ram_start, ram_end);
+    clear_static_vars();
+}
+
 int main()
 {
     printf("DEBUG TEST ZYNQMP\n");
-    bootinfo.mem.bank[0].start = 0x0;
-    bootinfo.mem.bank[0].size = 0x7ff00000;
-    bootinfo.mem.bank[1].start = (unsigned long long)0x800000000;
-    bootinfo.mem.bank[1].size = 0x80000000;
-    bootinfo.mem.nr_banks = 2;
-    tot_size = bootinfo.mem.bank[0].size + bootinfo.mem.bank[1].size;
-
-    init_pdx();
-    setup_frametable_mappings(0x0, 0x880000000);
+    test(2, 0UL, 0x7ff00000UL, 0x800000000UL, 0x80000000UL);
     printf("=====\n");
-
 
     printf("DEBUG TEST 512MB@2G\n");
-    clear_static_vars();
-    bootinfo.mem.bank[0].start = 0x80000000;
-    bootinfo.mem.bank[0].size = 0x2000000;
-    bootinfo.mem.nr_banks = 1;
-    tot_size = bootinfo.mem.bank[0].size;
-
-    init_pdx();
-    setup_frametable_mappings(0x80000000, 0x82000000);
+    test(1, 0x800000000UL, 0x2000000UL);
     printf("=====\n");
 
-    printf("DEBUG TEST FAKE1\n");
-    clear_static_vars();
-    bootinfo.mem.bank[0].start = 0x100000000;
-    bootinfo.mem.bank[0].size = 0x2000000;
-    bootinfo.mem.bank[1].start = 0x200000000;
-    bootinfo.mem.bank[1].size = 0x2000000;
-    bootinfo.mem.nr_banks = 2;
-    tot_size = bootinfo.mem.bank[0].size + bootinfo.mem.bank[1].size;
-
-    init_pdx();
-    setup_frametable_mappings(0x100000000, 0x202000000);
+    test(2, 0x100000000, 0x2000000UL,
+            0x200000000, 0x2000000UL);
     printf("=====\n");
 }
